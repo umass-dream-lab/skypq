@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKYPQ Demo Screenshot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: #2d2d2d;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #444;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toolbar-left a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-left a:hover {
+            color: #fff;
+        }
+
+        .toolbar-title {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .toolbar-center {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .zoom-btn {
+            background: #444;
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #555;
+        }
+
+        .zoom-level {
+            color: #aaa;
+            font-size: 0.9rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-btn {
+            background: #1a5276;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #2471a3;
+        }
+
+        /* Image container */
+        .image-container {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .image-wrapper {
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        .image-wrapper img {
+            display: block;
+            max-width: none;
+            width: 100%;
+            height: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .toolbar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .toolbar-center {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <div class="toolbar-left">
+        <a href="index.html">← Back</a>
+        <span class="toolbar-title">SKYPQ Demo Screenshot</span>
+    </div>
+    <div class="toolbar-center">
+        <button class="zoom-btn" id="zoomOut">−</button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomFit" title="Fit to width">⤢</button>
+    </div>
+    <div class="toolbar-right">
+        <a href="demo.html" class="toolbar-btn">▶ Launch Demo</a>
+    </div>
+</div>
+
+<div class="image-container" id="container">
+    <div class="image-wrapper" id="wrapper">
+        <img src="screenshot.png" alt="SKYPQ Demo Screenshot" id="screenshot">
+    </div>
+</div>
+
+<script>
+    const wrapper = document.getElementById('wrapper');
+    const zoomLevel = document.getElementById('zoomLevel');
+    const container = document.getElementById('container');
+    
+    let zoom = 100;
+    const minZoom = 25;
+    const maxZoom = 300;
+    const step = 25;
+    
+    function updateZoom() {
+        wrapper.style.transform = `scale(${zoom / 100})`;
+        zoomLevel.textContent = `${zoom}%`;
+    }
+    
+    document.getElementById('zoomIn').addEventListener('click', () => {
+        if (zoom < maxZoom) {
+            zoom += step;
+            updateZoom();
+        }
+    });
+    
+    document.getElementById('zoomOut').addEventListener('click', () => {
+        if (zoom > minZoom) {
+            zoom -= step;
+            updateZoom();
+        }
+    });
+    
+    document.getElementById('zoomFit').addEventListener('click', () => {
+        const img = document.getElementById('screenshot');
+        const containerWidth = container.clientWidth - 40;
+        const imgWidth = img.naturalWidth;
+        zoom = Math.round((containerWidth / imgWidth) * 100);
+        zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
+        updateZoom();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '+' || e.key === '=') {
+            document.getElementById('zoomIn').click();
+        } else if (e.key === '-') {
+            document.getElementById('zoomOut').click();
+        } else if (e.key === '0') {
+            zoom = 100;
+            updateZoom();
+        }
+    });
+    
+    // Mouse wheel zoom
+    container.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            if (e.deltaY < 0 && zoom < maxZoom) {
+                zoom += step;
+            } else if (e.deltaY > 0 && zoom > minZoom) {
+                zoom -= step;
+            }
+            updateZoom();
+        }
+    }, { passive: false });
+</script>
+
+</body>
+</html>
