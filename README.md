@@ -1,62 +1,20 @@
 # Incremental Package Queries
 
-This repository hosts the project website for **Incremental Package Queries** research.
+[Vasileios Vittis](https://vvittis.github.io/) · [Azza Abouzied](http://azza.azurewebsites.net/) · [Peter J. Haas](https://people.cs.umass.edu/~phaas/) · [Alexandra Meliou](https://people.cs.umass.edu/~ameli/)
 
-🌐 **Live Demo**: [https://umass-dream-lab.github.io/skypq/demo.html](https://umass-dream-lab.github.io/skypq/demo.html) 
-
-🌐 **Project Website**: [https://umass-dream-lab.github.io/skypq](https://umass-dream-lab.github.io/skypq) 
+[Project Website](https://umass-dream-lab.github.io/skypq) · [SKYPQ Live Demo](https://umass-dream-lab.github.io/skypq/demo.html)
 
 ## About
 
-**Incremental Package Queries** extends database systems with efficient constrained optimization over dynamic data. We develop methods to maintain optimal solutions incrementally—avoiding expensive recomputation when data or query parameters change.
+Incremental Package Queries extends database systems with efficient constrained optimization over dynamic data. We develop methods to maintain optimal solutions incrementally—avoiding expensive recomputation when data or query parameters change.
 
-A *package query* returns a collection of tuples that collectively optimize an objective function while satisfying constraints. Package queries enable in-database prescriptive analytics across domains like finance, healthcare, logistics, and cloud computing.
+A *package query* returns a multiset of tuples satisfying global constraints and optimizing a given objective. Package queries enable in-database prescriptive analytics across domains like finance, healthcare, logistics, and cloud computing.
 
-## Demo
+## Works
 
-The **SKYPQ Demo** demonstrates K-skyband-based data reduction for package queries:
+**SKYPQ: Dominance-Based Data Reduction for Package Queries** *(Under Submission)*
 
-- Watch 6,500 VM offers collapse to a small K-skyband (~58 candidates)
-- Compare greedy heuristics against exact ILP solutions
-- Trigger what-if scenarios (price changes, VM discontinuation)
-- Interactive playground for manual exploration
-
-## Files
-
-| File | Description |
-|------|-------------|
-| `index.html` | Project landing page |
-| `demo.html` | Interactive SKYPQ demo (runs entirely in browser) |
-| `screenshot.html` | Zoomable screenshot viewer |
-| `screenshot.png` | Demo screenshot |
-
-## Publications
-
-- **SKYPQ: K-Skyband Data Reduction for Package Queries**  
-  Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou  
-  *VLDB 2026 (Demo)*
-
-- **Incremental Package Maintenance**  
-  Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou  
-  *NEDB 2025 (Poster)* — [Project Page](https://vvittis.github.io/ScalablePackageBuilderProject/)
-
-## Related Work
-
-This research builds on the [Package Queries](https://packagebuilder.cs.umass.edu/) project:
-
-- Brucato et al., *Scalable Package Queries in Relational Database Systems*, VLDB 2016 — [PDF](https://vldb.org/pvldb/vol9/p576-brucato.pdf)
-- Mai et al., *Scaling Package Queries to a Billion Tuples*, VLDB 2024 — [PDF](https://www.vldb.org/pvldb/vol17/p1146-mai.pdf)
-
-## People
-
-- [Vasileios Vittis](https://vvittis.github.io/) — PhD Student, UMass Amherst
-- [Azza Abouzied](http://azza.azurewebsites.net/) — Professor, NYU Abu Dhabi
-- [Peter J. Haas](https://people.cs.umass.edu/~phaas/) — Professor, UMass Amherst
-- [Alexandra Meliou](https://people.cs.umass.edu/~ameli/) — Professor, UMass Amherst
-
-## Acknowledgements
-
-This work is supported by NSF grants IIS-1943971 and IIS-1421322.
+Prescriptive analytics workloads often require solving package queries over data that changes continuously. When each attribute in the query has a clear "better" direction, e.g., lower cost and higher performance, most candidate tuples are irrelevant: they are strictly worse than others on every dimension and can never appear in an optimal solution. We demonstrate SKYPQ, a system that employs a novel, dominance-based data reduction method for package queries under updates. The key idea is to maintain a K-skyband index, a small, correctness-preserving subset of candidates, and apply a resolve checker to skip re-optimization when updates cannot affect the optimal package.
 
 ## License
 
