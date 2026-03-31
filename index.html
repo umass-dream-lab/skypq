@@ -6,11 +6,7 @@
     <title>Incremental Package Queries</title>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -19,433 +15,429 @@
             background: #fff;
         }
 
-        a {
-            color: #1a5276;
-            text-decoration: none;
-        }
+        a { color: #2471a3; text-decoration: none; }
+        a:hover { text-decoration: underline; }
 
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Minimal Header */
-        header {
-            background: #1a5276;
-            color: white;
-            padding: 35px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        header h1 .pkg-icon {
-            font-size: 1.6rem;
-        }
-
-        /* Navigation */
+        /* ── Navigation (top of page) ── */
         nav {
             background: #f8f8f8;
             border-bottom: 1px solid #e0e0e0;
-            padding: 12px 20px;
+            padding: 0 20px;
             text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
-        nav a {
-            margin: 0 18px;
-            font-weight: 600;
-            color: #555;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        nav a:hover {
-            color: #1a5276;
-            text-decoration: none;
-        }
-
-        /* Main content */
-        main {
+        .nav-inner {
             max-width: 900px;
             margin: 0 auto;
-            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            position: relative;
         }
 
-        section {
-            margin-bottom: 50px;
+        .nav-links { display: flex; }
+
+        .nav-links a {
+            padding: 11px 18px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
         }
+
+        .nav-links a:hover { color: #2471a3; text-decoration: none; }
+
+        .burger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .burger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: #555;
+            margin: 5px 0;
+            transition: background 0.2s;
+        }
+
+        .burger:hover span { background: #2471a3; }
+
+        /* ── Header ── */
+        header {
+            background: #2980b9;
+            color: white;
+            padding: 40px 20px 32px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        header h1 .pkg-icon { width: 68px; height: 68px; vertical-align: middle; }
+
+        /* ── Main ── */
+        main { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        section { margin-bottom: 50px; }
 
         h2 {
-            font-size: 1.5rem;
-            color: #1a5276;
-            border-bottom: 2px solid #1a5276;
-            padding-bottom: 8px;
+            font-size: 1.4rem;
+            color: #2471a3;
             margin-bottom: 20px;
+            font-weight: 700;
         }
 
         h3 {
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             color: #444;
-            margin: 25px 0 15px 0;
+            margin: 25px 0 14px 0;
+            font-weight: 600;
         }
 
-        p {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
+        p { margin-bottom: 15px; text-align: justify; }
 
-        /* Lead description */
+        /* ── Lead ── */
         .lead {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #444;
-            border-left: 4px solid #1a5276;
-            padding: 18px 20px;
-            margin: 25px 0;
+            border-left: 4px solid #2471a3;
+            padding: 16px 20px;
+            margin: 0 0 20px 0;
             background: #f9fbfc;
         }
 
-        /* Example box */
+        .lead p { margin-bottom: 0; }
+
+        /* ── Example box ── */
         .example-box {
             background: #fff;
             border: 1px solid #ddd;
-            border-left: 4px solid #1a5276;
-            padding: 25px;
-            margin: 25px 0;
-            border-radius: 0 6px 6px 0;
+            border-left: 4px solid #2471a3;
+            padding: 22px 25px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
         }
 
         .example-box h4 {
-            color: #1a5276;
-            margin-bottom: 15px;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2471a3;
+            margin-bottom: 14px;
         }
 
-        .example-box p {
-            margin-bottom: 12px;
-        }
+        .example-box p { margin-bottom: 10px; }
+        .example-box p:last-child { margin-bottom: 0; }
 
-        .example-box p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Code block - WHITE background, proper formatting */
+        /* ── Code block ── */
         .code-block {
-            background: #fff;
+            background: #fafafa;
             color: #333;
             padding: 20px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-family: 'Source Code Pro', monospace;
             font-size: 0.85rem;
             overflow-x: auto;
             margin: 20px 0;
             line-height: 1.5;
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             white-space: pre;
         }
 
-        .code-block .keyword {
-            color: #1a5276;
+        .code-block .keyword  { color: #2471a3; font-weight: 600; }
+        .code-block .function { color: #7b241c; }
+        .code-block .number   { color: #6c3483; }
+        .code-block .comment  { color: #7f8c8d; font-style: italic; }
+
+        /* ── People ── */
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .person {
+            padding: 14px;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .person .name {
             font-weight: 600;
+            color: #222;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .code-block .function {
-            color: #7b241c;
+        .person .affiliation {
+            font-size: 0.82rem;
+            color: #666;
+            margin-top: 4px;
         }
 
-        .code-block .number {
-            color: #6c3483;
+        .uni-logo {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
         }
 
-        .code-block .comment {
-            color: #7f8c8d;
-            font-style: italic;
-        }
-
-        /* Demo section */
-        .demo-section {
-            background: #f5f7f9;
-            border-radius: 8px;
-            margin: 35px 0;
-            border: 1px solid #e0e5ea;
+        /* ── Works ── */
+        .work {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 24px;
             overflow: hidden;
         }
 
-        .demo-header {
-            padding: 25px 30px 15px 30px;
+        .work-body { padding: 20px 24px; }
+
+        .work-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 4px;
         }
 
-        .demo-header h2 {
-            border: none;
-            margin-bottom: 10px;
-            text-align: left;
-        }
-
-        .demo-header p {
-            text-align: left;
+        .work-authors {
+            font-size: 0.9rem;
             color: #555;
-            font-size: 0.95rem;
+            margin-bottom: 4px;
         }
 
-        .demo-screenshot {
+        .work-venue {
+            font-size: 0.88rem;
+            color: #2471a3;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .work-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .work-links a {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2471a3;
+            border: 1px solid #2471a3;
+            padding: 4px 12px;
+            border-radius: 3px;
+            transition: background 0.15s, color 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .work-links a:hover {
+            background: #2471a3;
+            color: white;
+            text-decoration: none;
+        }
+
+        .work-links a:hover .icon-pdf path,
+        .work-links a:hover .icon-pdf polyline,
+        .work-links a:hover .icon-pdf line { stroke: white; }
+
+        .icon-pdf {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        /* Demo screenshot inside work card */
+        .work-screenshot {
             position: relative;
             display: block;
             cursor: pointer;
+            border-top: 1px solid #e0e0e0;
         }
 
-        .demo-screenshot img {
-            width: 100%;
-            display: block;
-            border-top: 1px solid #ddd;
-        }
+        .work-screenshot img { width: 100%; display: block; }
 
         .play-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            background: rgba(26, 82, 118, 0.9);
+            width: 64px; height: 64px;
+            background: rgba(31, 97, 141, 0.85);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 14px rgba(0,0,0,0.25);
         }
 
         .play-overlay::after {
             content: '';
-            width: 0;
-            height: 0;
-            border-top: 15px solid transparent;
-            border-bottom: 15px solid transparent;
-            border-left: 25px solid white;
-            margin-left: 5px;
+            width: 0; height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 20px solid white;
+            margin-left: 4px;
         }
 
-        .demo-screenshot:hover .play-overlay {
-            transform: translate(-50%, -50%) scale(1.1);
-            background: rgba(36, 113, 163, 0.95);
+        .work-screenshot:hover .play-overlay {
+            transform: translate(-50%, -50%) scale(1.08);
+            background: rgba(36, 113, 163, 0.92);
         }
 
-        .demo-actions {
-            padding: 15px 30px 25px 30px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .demo-btn {
-            display: inline-block;
-            background: #1a5276;
-            color: white;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 5px;
-            transition: background 0.2s;
-        }
-
-        .demo-btn:hover {
-            text-decoration: none;
-            background: #2471a3;
-        }
-
-        .demo-btn-secondary {
-            background: transparent;
-            color: #1a5276;
-            border: 2px solid #1a5276;
-        }
-
-        .demo-btn-secondary:hover {
-            background: #1a5276;
-            color: white;
-        }
-
-        /* People section */
-        .people-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .person {
-            text-align: center;
-            padding: 12px;
-        }
-
-        .person .name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .person .affiliation {
-            font-size: 0.85rem;
-            color: #666;
-        }
-
-        /* Publications */
-        .publication {
-            background: #f9fbfc;
-            padding: 18px;
-            margin: 12px 0;
-            border-radius: 6px;
-            border-left: 4px solid #1a5276;
-        }
-
-        .publication .title {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #333;
-        }
-
-        .publication .authors {
-            color: #555;
-            margin: 5px 0;
-            font-size: 0.9rem;
-        }
-
-        .publication .venue {
-            color: #1a5276;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .publication .links {
-            margin-top: 8px;
-        }
-
-        .publication .links a {
-            display: inline-block;
-            background: #1a5276;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-right: 5px;
-            margin-top: 4px;
-        }
-
-        .publication .links a:hover {
-            background: #2471a3;
-            text-decoration: none;
-        }
-
-        /* Related work list */
-        .related-list {
-            list-style: none;
-            margin: 12px 0;
-        }
+        /* ── Related work ── */
+        .related-list { list-style: none; margin: 12px 0; }
 
         .related-list li {
             margin-bottom: 10px;
-            padding-left: 18px;
+            padding-left: 16px;
             position: relative;
             font-size: 0.95rem;
         }
 
         .related-list li::before {
             content: "•";
-            color: #1a5276;
+            color: #2471a3;
             font-weight: bold;
             position: absolute;
             left: 0;
         }
 
-        .related-list .paper-title {
-            font-style: italic;
-        }
+        .related-list .paper-title { font-style: italic; }
 
-        /* Footer */
+        /* ── Footer ── */
         footer {
             background: #2c3e50;
             color: #aaa;
             text-align: center;
-            padding: 25px 20px;
-            font-size: 0.9rem;
+            padding: 22px 20px;
+            font-size: 0.88rem;
         }
 
-        footer a {
-            color: #ddd;
-        }
+        footer a { color: #ccc; }
+        footer a:hover { color: #fff; }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 1.4rem;
-            }
-            
-            nav a {
-                display: block;
-                margin: 8px 0;
-            }
-            
-            .demo-actions {
+        /* ── Mobile ── */
+        @media (max-width: 640px) {
+            nav { position: static; }
+
+            .burger { display: block; }
+
+            .nav-links {
+                display: none;
                 flex-direction: column;
+                width: 100%;
+                padding: 6px 0 10px 0;
             }
+
+            .nav-links.open { display: flex; }
+
+            .nav-links a { padding: 10px 0; text-align: center; }
+
+            .nav-inner {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                padding: 4px 0;
+            }
+
+            header h1 { font-size: 1.5rem; }
+            header h1 .pkg-icon { font-size: 1.9rem; }
+
+            .people-grid { grid-template-columns: 1fr 1fr; }
+
+            .work-links { flex-direction: column; }
+            .work-links a { text-align: center; justify-content: center; }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <h1><span class="pkg-icon">📦</span> Incremental Package Queries</h1>
-</header>
-
+<!-- Nav at top -->
 <nav>
-    <a href="#about">About</a>
-    <a href="#demo">Demo</a>
-    <a href="#publications">Publications</a>
-    <a href="#people">People</a>
-    <a href="#code">Code</a>
+    <div class="nav-inner">
+        <div class="nav-links" id="nav-links">
+            <a href="#about">About</a>
+            <a href="#people">People</a>
+            <a href="#works">Publications</a>
+            <a href="#code">Code</a>
+        </div>
+        <button class="burger" id="burger" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
 </nav>
+
+<header>
+    <h1><img src="package.png" class="pkg-icon" alt=""> Incremental Package Queries</h1>
+</header>
 
 <main>
 
     <section id="about">
-        <div class="lead">
-            <strong>Incremental Package Queries</strong> extends database systems with efficient 
-            constrained optimization over dynamic data. We develop methods to maintain optimal 
-            solutions incrementally—avoiding expensive recomputation when data or query parameters change.
-        </div>
-
         <p>
-            A <em>package query</em> returns a collection of tuples that collectively optimize an 
-            objective function while satisfying constraints. Package queries enable in-database 
-            prescriptive analytics across domains like finance, healthcare, logistics, and cloud computing.
+            A <em>package query</em> returns a multiset of tuples satisfying global constraints
+            and optimizing an objective — a natural formulation of constrained optimization directly
+            within a database. Package queries power prescriptive analytics across finance, healthcare,
+            logistics, and cloud computing.
         </p>
 
-        <div class="example-box">
-            <h4>📦 Continuous VM Provisioning</h4>
+        <div class="lead">
             <p>
-                Jordan is a platform engineer provisioning VMs for a data pipeline requiring at least 
-                <strong>800 Compute Units</strong>. Jordan wants the cheapest bundle meeting this 
-                requirement, with practical constraints: <strong>8–12 instances</strong> for fault 
-                tolerance and quota limits, and <strong>at most 2 copies</strong> of any single VM type.
-            </p>
-            <p>
-                The cloud provider's catalog contains <strong>6,500 VM offers</strong>—yet Jordan's 
-                package will contain only 8–12 of them. Spot prices fluctuate continuously, requiring 
-                frequent re-optimization. At any moment, most options are obviously poor deals. 
-                Our methods identify which options actually matter, reducing the catalog by 
-                <strong>over 99%</strong> while guaranteeing the same optimal solution.
+                As underlying data evolves continuously, re-solving from scratch is expensive.
+                <strong>Incremental Package Queries</strong> develops principled methods to maintain
+                optimal solutions efficiently, updating only what the data changes require.
             </p>
         </div>
 
-        <h3>Package Query Language (PaQL)</h3>
-        
+        <h2>Example</h2>
+
+        <div class="example-box">
+            <h4>VM Provisioning</h4>
+            <p>
+                Jordan is a platform engineer provisioning VMs for a data pipeline that requires
+                at least <strong>800 Compute Units (CU)</strong>. Jordan wants the cheapest bundle
+                meeting this requirement, with practical constraints: at least <strong>8 instances</strong>
+                for fault tolerance, at most <strong>12 instances</strong> to respect account quotas,
+                and <strong>no more than 2 repetitions</strong> of a single VM type to avoid
+                over-reliance on one configuration. The cloud provider's catalog contains thousands of
+                VM offers, yet Jordan's package will contain only 8&ndash;12 of them. Spot prices fluctuate
+                with supply and demand, so an overpriced option now may become the best choice an hour
+                later, so Jordan must re-optimize frequently. Yet at any moment, most options are
+                obviously poor deals: why consider a 20 CU instance at $2/hr when another offers
+                40 CU at $1/hr? Jordan suspects most of the catalog is irrelevant, but they need a
+                principled way to identify which options actually matter.
+            </p>
+        </div>
+
+        <p style="margin-top: 20px; margin-bottom: 6px; color: #444;">
+            Jordan's requirements can be expressed directly as a package query in PaQL:
+        </p>
+
         <div class="code-block"><span class="keyword">SELECT</span>    <span class="function">PACKAGE</span>(*) <span class="keyword">AS</span> P
 <span class="keyword">FROM</span>      vm_offers
 <span class="keyword">REPEAT</span>    <span class="keyword">EACH</span> P.offer_id <span class="keyword">AT MOST</span> <span class="number">2</span>
@@ -456,124 +448,152 @@
 
     </section>
 
-    <section id="demo" class="demo-section">
-        <div class="demo-header">
-            <h2>SKYPQ Demo</h2>
-            <p>
-                Explore K-skyband-based data reduction in action. Watch thousands of VMs 
-                collapse to a small skyband, compare greedy heuristics against exact ILP solutions, 
-                and trigger what-if scenarios to see efficient update handling.
-            </p>
-        </div>
-        <a href="demo.html" class="demo-screenshot">
+    <section id="demo">
+        <h2>Demo</h2>
+        <p>
+            The SKYPQ demo provides an interactive interface for exploring dominance-based data
+            reduction for package queries. Starting from a catalog of 6,500 VM offers, the system
+            reduces the candidate space to a small K-skyband while preserving optimality guarantees.
+            Participants can solve package queries over the reduced space with exact results, trigger
+            what-if scenarios such as price changes and VM discontinuation, and observe the system
+            handling streaming updates without full re-optimization.
+        </p>
+        <a href="demo.html" class="work-screenshot">
             <img src="screenshot.png" alt="SKYPQ Demo Screenshot">
             <div class="play-overlay"></div>
         </a>
-        <div class="demo-actions">
-            <a href="demo.html" class="demo-btn">▶ Launch Demo</a>
-            <a href="screenshot.html" class="demo-btn demo-btn-secondary">🔍 View Screenshot</a>
+    </section>
+
+    <section id="people">
+        <h2>People</h2>
+        <div class="people-grid">
+            <div class="person">
+                <div class="name">
+                    <a href="https://vvittis.github.io/">Vasileios Vittis</a>
+                    <img src="mass.png" class="uni-logo" alt="UMass">
+                </div>
+                <div class="affiliation">PhD Student, UMass Amherst</div>
+            </div>
+            <div class="person">
+                <div class="name">
+                    <a href="http://azza.azurewebsites.net/">Azza Abouzied</a>
+                    <img src="nyu.png" class="uni-logo" alt="NYU">
+                </div>
+                <div class="affiliation">Professor, NYU Abu Dhabi</div>
+            </div>
+            <div class="person">
+                <div class="name">
+                    <a href="https://people.cs.umass.edu/~phaas/">Peter J. Haas</a>
+                    <img src="mass.png" class="uni-logo" alt="UMass">
+                </div>
+                <div class="affiliation">Professor, UMass Amherst</div>
+            </div>
+            <div class="person">
+                <div class="name">
+                    <a href="https://people.cs.umass.edu/~ameli/">Alexandra Meliou</a>
+                    <img src="mass.png" class="uni-logo" alt="UMass">
+                </div>
+                <div class="affiliation">Professor, UMass Amherst</div>
+            </div>
         </div>
     </section>
 
-    <section id="publications">
+    <section id="works">
         <h2>Publications</h2>
 
-        <div class="publication">
-            <div class="title">SKYPQ: K-Skyband Data Reduction for Package Queries</div>
-            <div class="authors">
-                Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou
-            </div>
-            <div class="venue">Under Submission</div>
-            <div class="links">
-                <a href="paper.pdf">📄 Paper</a>
-                <a href="demo.html">🎮 Demo</a>
+        <div class="work">
+            <div class="work-body">
+                <div class="work-title">SKYPQ: Dominance-Based Data Reduction for Package Queries</div>
+                <div class="work-authors">Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou</div>
+                <div class="work-venue">Under Submission</div>
+                <div class="work-links">
+                    <a href="paper.pdf">
+                        <svg class="icon-pdf" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Paper
+                    </a>
+                    <a href="demo.html">Demo</a>
+                </div>
             </div>
         </div>
 
-        <div class="publication">
-            <div class="title">Incremental Package Maintenance</div>
-            <div class="authors">
-                Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou
-            </div>
-            <div class="venue">NEDB 2025 (Poster)</div>
-            <div class="links">
-                <a href="https://vvittis.github.io/ScalablePackageBuilderProject/">🌐 Project</a>
-                <a href="https://nedbday.github.io/2025/#posters">📋 NEDB</a>
+        <div class="work">
+            <div class="work-body">
+                <div class="work-title">Incremental Package Maintenance</div>
+                <div class="work-authors">Vasileios Vittis, Azza Abouzied, Peter J. Haas, Alexandra Meliou</div>
+                <div class="work-venue">NEDB 2025 (Poster)</div>
+                <div class="work-links">
+                    <a href="nedb-poster.pdf">
+                        <svg class="icon-pdf" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        Poster
+                    </a>
+                </div>
             </div>
         </div>
 
         <h3>Related Work</h3>
-        <p>
-            This research builds on the foundations of 
-            <a href="https://packagebuilder.cs.umass.edu/">Package Queries</a>:
-        </p>
+        <p>This research builds on the foundations of <a href="https://packagebuilder.cs.umass.edu/">Package Queries</a>:</p>
         <ul class="related-list">
             <li>
-                Brucato et al., 
-                <span class="paper-title">Scalable Package Queries in Relational Database Systems</span>, 
+                Brucato et al.,
+                <span class="paper-title">Scalable Package Queries in Relational Database Systems</span>,
                 VLDB 2016
                 [<a href="https://vldb.org/pvldb/vol9/p576-brucato.pdf">PDF</a>]
             </li>
             <li>
-                Mai et al., 
-                <span class="paper-title">Scaling Package Queries to a Billion Tuples</span>, 
+                Mai et al.,
+                <span class="paper-title">Scaling Package Queries to a Billion Tuples</span>,
                 VLDB 2024
                 [<a href="https://www.vldb.org/pvldb/vol17/p1146-mai.pdf">PDF</a>]
             </li>
         </ul>
     </section>
 
-    <section id="people">
-        <h2>People</h2>
-
-        <div class="people-grid">
-            <div class="person">
-                <div class="name"><a href="https://vvittis.github.io/">Vasileios Vittis</a></div>
-                <div class="affiliation">PhD Student, UMass Amherst</div>
-            </div>
-            <div class="person">
-                <div class="name"><a href="http://azza.azurewebsites.net/">Azza Abouzied</a></div>
-                <div class="affiliation">Professor, NYU Abu Dhabi</div>
-            </div>
-            <div class="person">
-                <div class="name"><a href="https://people.cs.umass.edu/~phaas/">Peter J. Haas</a></div>
-                <div class="affiliation">Professor, UMass Amherst</div>
-            </div>
-            <div class="person">
-                <div class="name"><a href="https://people.cs.umass.edu/~ameli/">Alexandra Meliou</a></div>
-                <div class="affiliation">Professor, UMass Amherst</div>
-            </div>
-        </div>
-    </section>
-
     <section id="code">
         <h2>Code</h2>
         <p>
-            Source code will be available under the MIT License.
-        </p>
-        <p style="color: #666;">
-            GitHub repository (coming soon)
+            Source code is available on <a href="https://github.com/umass-dream-lab/skypq">GitHub</a> under the MIT License.
         </p>
     </section>
 
     <section id="acknowledgements">
         <h2>Acknowledgements</h2>
-        <p>
-            This work is supported by NSF grants.
-        </p>
+        <p>This work was supported by the National Science Foundation under grants 1943971 and 2211918. This work was also supported by NYUAD CITIES, funded by Tamkeen under the Research Institute Award CG001.</p>
     </section>
 
 </main>
 
 <footer>
     <p>
-        © 2026 Incremental Package Queries
+        &copy; 2026 Incremental Package Queries
         &nbsp;|&nbsp;
         <a href="https://packagebuilder.cs.umass.edu/">Package Queries</a>
         &nbsp;|&nbsp;
         <a href="https://www.cics.umass.edu/">UMass CICS</a>
     </p>
 </footer>
+
+<script>
+    document.getElementById('burger').addEventListener('click', function () {
+        document.getElementById('nav-links').classList.toggle('open');
+    });
+    document.querySelectorAll('#nav-links a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            document.getElementById('nav-links').classList.remove('open');
+        });
+    });
+</script>
 
 </body>
 </html>
