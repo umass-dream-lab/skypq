@@ -6970,11 +6970,10 @@
             }
 
             // Notify and Jordan reaction
-            const totalMs = Math.round(performance.now() - tStart);   // incremental skyband maintenance + ILP solve
-            console.log(`[SKYPQ] playground ${action}: incremental skyband + ILP = ${totalMs} ms over ${active.length} points`);
+            console.log(`[SKYPQ] playground ${action}: SKYPQ ${skypqMs.toFixed(1)} ms (maintain ${skyMs.toFixed(1)} + skyband solve ${ms.toFixed(1)}) vs full ILP ${fullMs.toFixed(1)} ms over ${active.length} vars`);
             const actionName = action === 'add' ? 'Added' : action === 'delete' ? 'Deleted' : 'Updated';
             const actionColor = action === 'add' ? 'green' : action === 'delete' ? 'red' : 'blue';
-            notify(actionName, `${point.name} → updated in ${totalMs} ms`, actionColor);
+            notify(actionName, `${point.name} → updated in ${skypqMs.toFixed(1)} ms`, actionColor);
             
             jordanReact('playground_' + action, { 
                 name: point.name, 
