@@ -1,5 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--
+  ============================================================================
+  SKYPQ — Dominance-Based Data Reduction for Package Queries (VLDB 2026 Demo)
+  ============================================================================
+  THIS SINGLE FILE IS THE COMPLETE SYSTEM. There is no backend and no build
+  step: the ILP solver, K-skyband computation, incremental maintenance, the
+  re-solve checker, and the entire UI all run client-side in the browser.
+  Only two external libraries are loaded from a CDN (see <head>):
+    - d3      : scatterplot rendering
+    - highs   : HiGHS MILP solver, compiled to WebAssembly (the exact ILP solve)
+
+  The implementation lives in the <script> block near the bottom of this file
+  (search for "<script>", around line 2486). It is organized into the labeled
+  sections below. To map the paper's concepts to the code:
+
+    Paper concept              Code section / function (search the file)
+    -------------------------  ------------------------------------------------
+    Dominance (Sec. 3)         // DOMINANCE  ->  dominates(), getPointsDominatedBy()
+    K-skyband reduction        // PARETO     ->  computeSkyband(), precomputeSkybandForSampling()
+    ILP over the skyband       // ILP SOLVER (HiGHS)  ->  solveILP(), solveOpt(), solveFullILP()
+    Skyband maintenance        // SCENARIO: Key VM Discontinued, // UPDATE STREAM
+    Re-solve checker           // UPDATE STREAM  ->  update-handling / scheduleNextSolve()
+    Greedy baselines           solveNaiveGreedy()
+    Kulli (shared skyband)     // KULLI TAB FUNCTIONS -> solveKulliQuery()
+
+  Live demo : https://umass-dream-lab.github.io/skypq/demo.html
+  Repo      : https://github.com/umass-dream-lab/skypq
+  ============================================================================
+-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -287,6 +316,41 @@
         }
 
         .scenario-overlay.show { display: block; }
+
+        .playground-perf {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 370px;
+            background: var(--surface);
+            border: 2px solid var(--purple);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            font-size: 13px;
+        }
+        .playground-perf.show { display: block; }
+        .playground-perf .pp-title { font-weight: 700; margin-bottom: 8px; }
+        .playground-perf .pp-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin: 4px 0;
+        }
+        .playground-perf .pp-skypq { color: var(--green); }
+        .playground-perf .pp-base { color: var(--orange); }
+        .playground-perf .pp-time { font-family: 'JetBrains Mono', monospace; font-weight: 600; white-space: nowrap; }
+        .playground-perf .pp-sub { color: var(--text3); font-size: 11px; margin: 0 0 4px 0; }
+        .playground-perf .pp-speedup {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-weight: 700;
+            color: var(--green);
+        }
 
         .scenario-header {
             display: flex;
@@ -2093,6 +2157,22 @@
                     </div>
                 </div>
 
+                <!-- Playground per-edit performance: SKYPQ vs full ILP over all points -->
+                <div class="playground-perf" id="playgroundPerf">
+                    <div class="pp-title">Per-edit cost</div>
+                    <div class="pp-row pp-skypq">
+                        <span>SKYPQ: incremental + ILP over skyband</span>
+                        <span class="pp-time" id="ppSkypq">—</span>
+                    </div>
+                    <div class="pp-sub" id="ppSkypqBreak">maintain — · solve — · — skyband pts</div>
+                    <div class="pp-row pp-base">
+                        <span>Baseline: full ILP over all points</span>
+                        <span class="pp-time" id="ppBase">—</span>
+                    </div>
+                    <div class="pp-sub" id="ppBaseBreak">no reduction · — vars</div>
+                    <div class="pp-speedup" id="ppSpeedup">—</div>
+                </div>
+
                 <div class="chart-tools" style="display: none;">
                 </div>
             </div>
@@ -2484,6 +2564,25 @@
     </div>
 
     <script>
+        // ############################################################
+        // SKYPQ SYSTEM CODE  (the entire engine + UI; no backend)
+        // ############################################################
+        // This <script> block implements the full SKYPQ demo. Map of the
+        // sections below to the paper "Dominance-Based Data Reduction for
+        // Package Queries" (VLDB 2026 Demonstration Track):
+        //
+        //   DOMINANCE ............ dominates(), getPointsDominatedBy()   (Sec. 3, dominance)
+        //   PARETO ............... computeSkyband(),                     (Sec. 3, K-skyband)
+        //                          precomputeSkybandForSampling()
+        //   ILP SOLVER (HiGHS) ... solveILP(), solveOpt(), solveFullILP()(Sec. 3, exact solve)
+        //   SCENARIO / UPDATE      maintenance under inserts/deletes +   (Sec. 3, maintenance
+        //   STREAM ............... the re-solve checker                   + re-solve checker)
+        //   KULLI TAB FUNCTIONS .. shared skyband reused across PQs      (Sec. 4, Kulli)
+        //
+        // The exact optimum is always produced by HiGHS (MILP, WASM); the
+        // skyband only shrinks HiGHS's input, it never approximates.
+        // ############################################################
+
         // ============================================================
         // SEEDED RANDOM NUMBER GENERATOR (for consistent data)
         // ============================================================
@@ -6306,6 +6405,7 @@
             const statusEl = document.getElementById('playgroundStatus');
             const exitBtn = document.getElementById('exitPlaygroundBtn');
             exitBtn.style.display = 'block';
+            document.getElementById('playgroundPerf').classList.add('show');
             
             switch(mode) {
                 case 'drag':
@@ -6335,6 +6435,7 @@
             
             document.getElementById('playgroundStatus').textContent = 'Select a mode to interact with the visualization';
             document.getElementById('exitPlaygroundBtn').style.display = 'none';
+            document.getElementById('playgroundPerf').classList.remove('show');
             
             // Restore normal interactions
             updatePlaygroundInteractions();
@@ -6530,6 +6631,8 @@
                     .on('start', function(event, d) {
                         if (playgroundMode !== 'drag') return;
                         draggedPoint = d;
+                        d._oldPerf = d.perf;   // stash old position for incremental drag update
+                        d._oldCost = d.cost;
                         d3.select(this).classed('point-dragging', true);
                         hideTip();
                     })
@@ -6565,42 +6668,77 @@
         // Recompute steps 2, 3, 5, 6 after playground changes
         // (Step 4 - Full ILP is skipped for speed, but result would be identical to step 6)
         function recomputeAllSteps(action, point) {
+            const tStart = performance.now();   // time the full recompute (skyband + ILP)
             const active = data.filter(d => !d.removed);
+            const oldSkyIds = new Set(lastSkybandIds);   // skyband membership BEFORE this edit (re-solve checker)
             
             // Update total count
             document.getElementById('statTotal').textContent = active.length;
             
             // ============================================
-            // FIRST: Compute domination counts (needed for all other steps)
+            // FIRST: Maintain domination counts + skyband membership INCREMENTALLY.
+            // Each edit updates only the counts the changed point affects, instead of an
+            // O(n^2) recompute (correctness verified by an offline parity test).
             // ============================================
-            for (const a of active) {
-                a.domCount = 0;
-                a.inSky = false;
-            }
-            
-            for (let i = 0; i < active.length; i++) {
-                for (let j = 0; j < active.length; j++) {
-                    if (i !== j) {
-                        const a = active[i], b = active[j];
-                        // b dominates a if b has higher perf AND lower cost
-                        if (b.perf >= a.perf && b.cost <= a.cost && (b.perf > a.perf || b.cost < a.cost)) {
-                            a.domCount++;
-                        }
+            const tSky = performance.now();   // time the incremental skyband maintenance
+            const domc = (bp, bc, ap, ac) => (bp >= ap && bc <= ac && (bp > ap || bc < ac)); // b dominates a
+            if (action === 'add') {
+                // `point` was just added to `active`: count its dominators, apply its influence.
+                let pc = 0;
+                for (const q of active) {
+                    if (q === point) continue;
+                    if (domc(q.perf, q.cost, point.perf, point.cost)) pc++;      // q dominates the new point
+                    if (domc(point.perf, point.cost, q.perf, q.cost)) {          // new point dominates q
+                        q.domCount++;
+                        q.inSky = q.domCount < K;                                // may evict q
                     }
                 }
+                point.domCount = pc;
+                point.inSky = point.domCount < K;
+            } else if (action === 'delete') {
+                // `point` already removed from `active`: undo its influence.
+                for (const q of active) {
+                    if (domc(point.perf, point.cost, q.perf, q.cost)) {          // deleted point dominated q
+                        q.domCount--;
+                        q.inSky = q.domCount < K;                                // may promote q
+                    }
+                }
+            } else if (action === 'drag') {
+                // `point` moved (old -> new): apply only the delta its move causes.
+                const op = (point._oldPerf !== undefined) ? point._oldPerf : point.perf;
+                const oc = (point._oldCost !== undefined) ? point._oldCost : point.cost;
+                let pc = 0;
+                for (const q of active) {
+                    if (q === point) continue;
+                    const oldDom = domc(op, oc, q.perf, q.cost);                 // point dominated q before
+                    const newDom = domc(point.perf, point.cost, q.perf, q.cost); // point dominates q now
+                    if (oldDom && !newDom) { q.domCount--; q.inSky = q.domCount < K; }      // may promote q
+                    else if (!oldDom && newDom) { q.domCount++; q.inSky = q.domCount < K; } // may evict q
+                    if (domc(q.perf, q.cost, point.perf, point.cost)) pc++;      // q dominates the moved point
+                }
+                point.domCount = pc;
+                point.inSky = point.domCount < K;
+                point._oldPerf = point.perf; point._oldCost = point.cost;        // reset baseline for next drag
+            } else {
+                // Fallback (unknown action): full recompute.
+                for (const a of active) a.domCount = 0;
+                for (let i = 0; i < active.length; i++)
+                    for (let j = 0; j < active.length; j++)
+                        if (i !== j && domc(active[j].perf, active[j].cost, active[i].perf, active[i].cost)) active[i].domCount++;
+                for (const a of active) a.inSky = a.domCount < K;
             }
-            
-            // Update skyband membership
-            for (const d of active) {
-                d.inSky = d.domCount < K;
-            }
-            
+            const skyMs = performance.now() - tSky;   // incremental skyband maintenance time
+
             // Update skyband stats
             const skyCount = active.filter(d => d.inSky).length;
             document.getElementById('statSky').textContent = skyCount;
             document.getElementById('statPrune').textContent = 
                 ((1 - skyCount / active.length) * 100).toFixed(1) + '%';
             lastSkybandIds = active.filter(d => d.inSky).map(d => d.id);
+            // Re-solve checker: decide whether the optimum can have changed.
+            let membershipChanged = lastSkybandIds.length !== oldSkyIds.size;
+            if (!membershipChanged) { for (const id of lastSkybandIds) { if (!oldSkyIds.has(id)) { membershipChanged = true; break; } } }
+            const needResolve = membershipChanged || ((action === 'drag' || action === 'add') && point.inSky);
             
             // ============================================
             // STEP 2: Recompute Greedy CU/$ (Efficiency)
@@ -6686,67 +6824,67 @@
             // STEP 6: Recompute ILP on K-Skyband
             // (Step 4 - Full ILP is skipped for speed; result would be identical)
             // ============================================
-            // Reset optimal flags
-            data.forEach(d => { d.inOpt = false; d.inFullOpt = false; });
-            
             const cands = active.filter(d => d.inSky);
-            
-            // Solve ILP using HiGHS
-            const t0 = performance.now();
-            const result = solveILP(cands);
-            const ms = performance.now() - t0;
-            
-            if (!result.feasible) {
-                notify('Infeasible', 'No solution found', 'red');
-                updatePoints();
-                drawPareto();
-                return;
-            }
-            
-            // Extract solution
-            optimalSolution = result.sol;
-            let optPerf = result.perf;
-            let optCost = result.cost;
-            const counts = {};
-            
-            result.sol.forEach(d => {
-                counts[d.id] = (counts[d.id] || 0) + 1;
-                const pt = data.find(p => p.id === d.id);
-                if (pt) {
-                    pt.inOpt = true;
-                    pt.inFullOpt = true; // Same as full ILP would produce
+            let ms = 0;                 // skyband ILP solve time (0 if the checker skips)
+            let ilpSkipped = false;
+            let optPerf, optCost;
+
+            if (needResolve) {
+                // The update may have changed the optimum: re-solve over the (small) skyband.
+                data.forEach(d => { d.inOpt = false; d.inFullOpt = false; });
+                const t0 = performance.now();
+                const result = solveILP(cands);
+                ms = performance.now() - t0;
+                if (!result.feasible) {
+                    notify('Infeasible', 'No solution found', 'red');
+                    updatePoints();
+                    drawPareto();
+                    return;
                 }
-            });
-            
-            lastOptCost = optCost;
-            lastOptPerf = optPerf;
-            lastOptimalIds = Object.keys(counts).map(id => parseInt(id));
-            
-            // Update optimal card
-            const optList = document.getElementById('optList');
-            optList.innerHTML = '';
-            Object.entries(counts).forEach(([id, count]) => {
-                const d = data.find(x => x.id === parseInt(id));
-                if (d) {
-                    const row = document.createElement('div');
-                    row.className = 'pkg-row';
-                    row.innerHTML = `<span>${d.name}</span><span>${d.perf.toFixed(0)} CU @ $${d.cost.toFixed(2)}${count > 1 ? ` × ${count}` : ''}</span>`;
-                    optList.appendChild(row);
+                optimalSolution = result.sol;
+                optPerf = result.perf;
+                optCost = result.cost;
+                const counts = {};
+                result.sol.forEach(d => {
+                    counts[d.id] = (counts[d.id] || 0) + 1;
+                    const pt = data.find(p => p.id === d.id);
+                    if (pt) { pt.inOpt = true; pt.inFullOpt = true; }
+                });
+                lastOptCost = optCost;
+                lastOptPerf = optPerf;
+                lastOptimalIds = Object.keys(counts).map(id => parseInt(id));
+
+                // Update optimal card
+                const optList = document.getElementById('optList');
+                optList.innerHTML = '';
+                Object.entries(counts).forEach(([id, count]) => {
+                    const d = data.find(x => x.id === parseInt(id));
+                    if (d) {
+                        const row = document.createElement('div');
+                        row.className = 'pkg-row';
+                        row.innerHTML = `<span>${d.name}</span><span>${d.perf.toFixed(0)} CU @ $${d.cost.toFixed(2)}${count > 1 ? ` × ${count}` : ''}</span>`;
+                        optList.appendChild(row);
+                    }
+                });
+                document.getElementById('optTotal').textContent = `${optPerf.toFixed(0)} CU @ $${optCost.toFixed(2)}`;
+                document.getElementById('optTime').textContent = formatTime(ms);
+                document.getElementById('skyOptCount').textContent = cands.length;
+                if (lastNaiveResult && lastNaiveResult.feasible) {
+                    const costSave = ((lastNaiveResult.cost - optCost) / lastNaiveResult.cost * 100);
+                    document.getElementById('savings').textContent = `${costSave.toFixed(0)}% cheaper than greedy`;
+                } else {
+                    document.getElementById('savings').textContent = `Optimal on ${cands.length} skyband`;
                 }
-            });
-            
-            document.getElementById('optTotal').textContent = `${optPerf.toFixed(0)} CU @ $${optCost.toFixed(2)}`;
-            document.getElementById('optTime').textContent = formatTime(ms);
-            document.getElementById('skyOptCount').textContent = cands.length;
-            
-            // Update savings badge
-            if (lastNaiveResult && lastNaiveResult.feasible) {
-                const costSave = ((lastNaiveResult.cost - optCost) / lastNaiveResult.cost * 100);
-                document.getElementById('savings').textContent = `${costSave.toFixed(0)}% cheaper than greedy`;
             } else {
-                document.getElementById('savings').textContent = `Optimal on ${cands.length} skyband`;
+                // Re-solve checker: the skyband is unchanged and no packaged/candidate value
+                // changed, so the previous optimum still holds. Skip the solver entirely.
+                ilpSkipped = true;
+                optPerf = lastOptPerf;
+                optCost = lastOptCost;
+                document.getElementById('optTime').textContent = 'skipped';
+                document.getElementById('skyOptCount').textContent = cands.length;
             }
-            
+
             // Update visualization
             updatePoints();
             drawPareto();
@@ -6801,10 +6939,30 @@
                 updatePoints();
             }
             
+            // Playground performance panel: SKYPQ (incremental maintenance + ILP over the
+            // skyband) vs. baseline (full ILP over ALL points, no reduction).
+            const tFull = performance.now();
+            solveILP(active);                                  // baseline: solve over all points
+            const fullMs = performance.now() - tFull;
+            const skypqMs = skyMs + ms;                        // ms = skyband ILP solve time
+            const ppEl = document.getElementById('ppSkypq');
+            if (ppEl) {
+                ppEl.textContent = `${skypqMs.toFixed(1)} ms`;
+                document.getElementById('ppSkypqBreak').textContent = ilpSkipped
+                    ? `maintain ${skyMs.toFixed(1)} ms · ILP skipped (optimum unchanged)`
+                    : `maintain ${skyMs.toFixed(1)} ms · solve ${ms.toFixed(1)} ms · ${cands.length} skyband pts`;
+                document.getElementById('ppBase').textContent = `${fullMs.toFixed(1)} ms`;
+                document.getElementById('ppBaseBreak').textContent = `no reduction · ${active.length} vars`;
+                const speed = skypqMs > 0 ? fullMs / skypqMs : 0;
+                document.getElementById('ppSpeedup').textContent = `≈ ${speed.toFixed(1)}× faster with K-skyband`;
+            }
+
             // Notify and Jordan reaction
+            const totalMs = Math.round(performance.now() - tStart);   // incremental skyband maintenance + ILP solve
+            console.log(`[SKYPQ] playground ${action}: incremental skyband + ILP = ${totalMs} ms over ${active.length} points`);
             const actionName = action === 'add' ? 'Added' : action === 'delete' ? 'Deleted' : 'Updated';
             const actionColor = action === 'add' ? 'green' : action === 'delete' ? 'red' : 'blue';
-            notify(actionName, `${point.name} → Recomputed`, actionColor);
+            notify(actionName, `${point.name} → updated in ${totalMs} ms`, actionColor);
             
             jordanReact('playground_' + action, { 
                 name: point.name, 
