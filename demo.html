@@ -33,11 +33,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SKYPQ Demo — K-Skyband Package Queries</title>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="lib/d3.min.js"></script>
     <!-- HiGHS-js: Industrial-grade MILP solver compiled to WebAssembly -->
-    <script src="https://cdn.jsdelivr.net/npm/highs@1.8.0/build/highs.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="lib/highs.js"></script>
+    <script src="lib/highs-wasm.js"></script>
+    <!-- Fonts use system fallbacks (Inter -> -apple-system/sans-serif; JetBrains Mono -> monospace); no web fetch -->
+    <link rel="stylesheet" href="lib/fontawesome/css/all.min.css">
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -2612,6 +2613,17 @@
         let highsSolveCount = 0;  // Track number of solves since last reinit
         const MAX_SOLVES_BEFORE_REINIT = 3; // Reinit HiGHS every N solves to prevent corruption
         
+        // Vendored HiGHS WASM bytes (base64 in lib/highs-wasm.js): no network, works from file://
+        let __highsWasm = null;
+        function highsWasmBytes() {
+            if (__highsWasm) return __highsWasm;
+            const bin = atob(window.HIGHS_WASM_B64 || '');
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            __highsWasm = bytes;
+            return bytes;
+        }
+
         async function initHiGHS() {
             if (highsReady) return highs;
             if (highsLoadPromise) return highsLoadPromise;
@@ -2621,7 +2633,7 @@
                     console.log('Loading HiGHS solver...');
                     // Load HiGHS with WASM from CDN
                     highs = await Module({
-                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/highs@1.8.0/build/${file}`
+                        wasmBinary: highsWasmBytes()
                     });
                     highsReady = true;
                     highsSolving = false;
@@ -7303,7 +7315,7 @@
                 try {
                     // Create a completely fresh instance
                     const freshHighs = await Module({
-                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/highs@1.8.0/build/${file}`
+                        wasmBinary: highsWasmBytes()
                     });
                     highs = freshHighs;
                     highsReady = true;
